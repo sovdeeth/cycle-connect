@@ -1,121 +1,189 @@
 
 class Point {
     constructor(lat, long, time) {
-      this.pos = { lat: lat, lng: long };
-      this.timestamp = time;
+        this.pos = new google.maps.LatLng(lat, long);
+        this.timestamp = time;
     }
-  }
-  
-  
-  var svgMarker = null;
-  var lineSymbol = null;
-  
-  var slideMarker;
-  
-  var map = null;
-  var polyline = null;
-  
-  function initMap() {
+}
+
+class Tracker {
+    constructor(name, filename) {
+        this.name = name;
+        this.filename = filename;
+        this.map;
+        this.points = parseGPX(filename);
+        this.startMarker = new google.maps.Marker({
+            position: this.points[0].pos,
+            icon: startMarkerSVG,
+            });
+
+        this.endMarker = new google.maps.Marker({
+            position: this.points[this.points.length-1].pos,
+            icon: endMarkerSVG,
+            });
+
+        this.slideMarker = new google.maps.Marker({
+            position: this.points[0].pos,
+            icon: slideMarkerSVG,
+            });
+
+        this.polyline = new google.maps.Polyline();
+        let path = this.polyline.getPath();
+        this.points.forEach((point) => {
+            path.push( point.pos);
+        });
+
+        this.infoWindow = new google.maps.InfoWindow({
+            content: "",
+            disableAutoPan: true,
+            });
+            
+        this.slideMarker.addListener("click", () => {
+            this.infoWindow.setContent(//"<h2>"+point.label+"</h2>"+
+                                    "<p>Location: "+ this.slideMarker.getPosition().lat() +"&deg;N, " + this.slideMarker.getPosition().lng() + "&deg;E</p>"/*+
+                                    "<p>Timestamp: "+point.timestamp.toLocaleTimeString() + " " + point.timestamp.toDateString() + "</p>"*/);
+            this.infoWindow.open(this.map, this.slideMarker);
+        });
+
+        this.startMarker.addListener("click", () => {
+            this.infoWindow.setContent(//"<h2>"+point.label+"</h2>"+
+                                    "<p>Location: "+ this.startMarker.getPosition().lat() +"&deg;N, " + this.startMarker.getPosition().lng() + "&deg;E</p>"/*+
+                                    "<p>Timestamp: "+point.timestamp.toLocaleTimeString() + " " + point.timestamp.toDateString() + "</p>"*/);
+            this.infoWindow.open(this.map, this.startMarker);
+        });
+
+        this.endMarker.addListener("click", () => {
+            this.infoWindow.setContent(//"<h2>"+point.label+"</h2>"+
+                                    "<p>Location: "+ this.endMarker.getPosition().lat() +"&deg;N, " + this.endMarker.getPosition().lng() + "&deg;E</p>"/*+
+                                    "<p>Timestamp: "+point.timestamp.toLocaleTimeString() + " " + point.timestamp.toDateString() + "</p>"*/);
+            this.infoWindow.open(this.map, this.endMarker);
+        });
+    }
+
+    addPoints(points){
+        let path = this.polyline.getPath();
+        points.forEach((point) => {
+            path.push( point.pos);
+            this.points.push(point);
+        });
+    }
+
+    getPointAt(index){
+        return points[index];
+    }
+
+    addToMap(map){
+        this.map = map;
+        this.startMarker.setMap(map);
+        this.endMarker.setMap(map);
+        this.slideMarker.setMap(map);
+        this.polyline.setMap(map);
+    }
+
+    removeFromMap(){
+        this.map = null;
+        this.startMarker.setMap(null);
+        this.endMarker.setMap(null);
+        this.slideMarker.setMap(null);
+        this.polyline.setMap(null);
+    }
+}
+
+var trackers = [];
+var selectedTracker = 0;
+var startMarkerSVG = null;
+var endMarkerSVG = null;
+var slideMarkerSVG = null;
+var lineSymbol = null;
+
+var map = null;
+var polyline = null;
+
+function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
-      zoom: 14,
-      center: {lat: 0, lng: 0},
-      mapTypeId: "terrain",
+        zoom: 14,
+        center: {lat: 0, lng: 0},
+        mapTypeId: "terrain",
     });
-  
-    svgMarker = {
-      path: google.maps.SymbolPath.CIRCLE,
-      fillColor: "red",
-      fillOpacity: 1,
-      strokeWeight: 1,
-      rotation: 0,
-      scale: 4,
+
+    startMarkerSVG = {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: "green",
+        fillOpacity: 1,
+        strokeWeight: 1,
+        rotation: 0,
+        scale: 4,
     };
-  
-      
-    polyline = new google.maps.Polyline({
-      map: map,
-    });
-  
-    addFile("skiing.gpx");
-  }
-  
-  
-  function parseGPX(gpxString){
+
+    slideMarkerSVG = {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: "yellow",
+        fillOpacity: 1,
+        strokeWeight: 1,
+        rotation: 0,
+        scale: 4,
+    };
+
+    endMarkerSVG = {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: "red",
+        fillOpacity: 1,
+        strokeWeight: 1,
+        rotation: 0,
+        scale: 4,
+    };
+
+
+    registerTracker("skiing", "skiing.gpx");
+    trackers[0].addToMap(map);
+    map.panTo(trackers[0].points[0].pos);
+    updateSlider()
+}
+
+function registerTracker(name, filename) {
+    let tracker = new Tracker(name, filename);
+    trackers.push(tracker);
+}
+
+
+function parseGPX(gpxString){
     if (window.XMLHttpRequest) {
         xmlhttp = new XMLHttpRequest();
-     } else {
+    } else {
         xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-     }
+    }
 
-     xmlhttp.open("GET", "gps/"+gpxString, false);
-     xmlhttp.send();
-     xml = xmlhttp.responseXML;
+    xmlhttp.open("GET", "gps/"+gpxString, false);
+    xmlhttp.send();
+    xml = xmlhttp.responseXML;
 
     const errorNode = xml.querySelector("parsererror");
     if (errorNode) {
         console.log("error while parsing");
         return;
     } 
-    
+
     const gpxPoints = xml.documentElement.getRootNode().getElementsByTagName("gpx")[0].getElementsByTagName("trk")[0].getElementsByTagName("trkseg")[0].getElementsByTagName("trkpt")
-    
+
     const points = Array.from(gpxPoints).map((node) => {
         return new Point(Number(node.getAttribute("lat")), Number(node.getAttribute("lon")), new Date(node.getElementsByTagName("time")[0].innerHTML));
     })
     return points;
-  }
-  
-  
-  
-  function addPoint(point, polyline) {
-    const path = polyline.getPath();
-    path.push(new google.maps.LatLng(point.pos.lat, point.pos.lng));  
-  }
-  
-  function addFile(gpxFile) {
-    let points = parseGPX(gpxFile);
-    addPointsToMap(points);
-  }
-  
-  function addPointsToMap(points) {
-    if (!(points instanceof Array)) return;
-    
-    const infoWindow = new google.maps.InfoWindow({
-      content: "",
-      disableAutoPan: true,
-    });
-  
-    slideMarker = new google.maps.Marker({
-      position: points[0].pos,
-      map: map,
-      icon: svgMarker,
-    });
-  
-    slideMarker.addListener("click", () => {
-        infoWindow.setContent(//"<h2>"+point.label+"</h2>"+
-                                "<p>Location: "+ slideMarker.getPosition().lat() +"&deg;N, " + slideMarker.getPosition().lng() + "&deg;E</p>"/*+
+}
+
+
+function updateSlider(){
+    let slider = document.getElementById("trackerSlider");
+    let min = 0, max = trackers[selectedTracker].points.length;
+    slider.setAttribute("min", min)
+    slider.setAttribute("max", max)
+}
+
+function updateMarkerPos(point) {
+    point = trackers[selectedTracker].polyline.getPath().getAt(point);
+    trackers[selectedTracker].slideMarker.setPosition(point);
+    trackers[selectedTracker].infoWindow.setContent(//"<h2>"+point.label+"</h2>"+
+                                "<p>Location: "+ trackers[selectedTracker].slideMarker.getPosition().lat() +"&deg;N, " + trackers[selectedTracker].slideMarker.getPosition().lng() + "&deg;E</p>"/*+
                                 "<p>Timestamp: "+point.timestamp.toLocaleTimeString() + " " + point.timestamp.toDateString() + "</p>"*/);
-        infoWindow.open(map, slideMarker);
-    });
-    
-  
-    
-  
-    //   return marker;
-    // });
-  
-    const path = polyline.getPath();
-    points.forEach((point) => {path.push( new google.maps.LatLng(point.pos.lat, point.pos.lng))});
-    map.panTo(path.getAt(0));
-  }
-  
-  function zoomToCoords(lat, long) {
-    map.panTo(new google.maps.LatLng(lat, long));
-  }
-  
-  function updateMarkerPos(percent) {
-    let point = Math.floor((polyline.getPath().length - 1) / 100 * percent);
-    point = polyline.getPath().getAt(point);
-    slideMarker.setPosition(point);
     map.panTo(point);
-  }
+}
