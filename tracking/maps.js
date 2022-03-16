@@ -11,21 +11,22 @@ class Tracker {
         this.name = name;
         this.filename = filename;
         this.map;
-        this.points = parseGPX(filename);
+        this.fullPoints = parseGPX(filename);
+        this.points = this.fullPoints.slice()
         this.startMarker = new google.maps.Marker({
             position: this.points[0].pos,
             icon: startMarkerSVG,
-            });
+        });
 
         this.endMarker = new google.maps.Marker({
             position: this.points[this.points.length-1].pos,
             icon: endMarkerSVG,
-            });
+        });
 
         this.slideMarker = new google.maps.Marker({
             position: this.points[0].pos,
             icon: slideMarkerSVG,
-            });
+        });
 
         this.polyline = new google.maps.Polyline();
         let path = this.polyline.getPath();
@@ -36,7 +37,7 @@ class Tracker {
         this.infoWindow = new google.maps.InfoWindow({
             content: "",
             disableAutoPan: true,
-            });
+        });
             
         this.slideMarker.addListener("click", () => {
             this.infoWindow.setContent(//"<h2>"+point.label+"</h2>"+
@@ -86,6 +87,24 @@ class Tracker {
         this.endMarker.setMap(null);
         this.slideMarker.setMap(null);
         this.polyline.setMap(null);
+    }
+
+    displayFromIndices(a, b){
+        this.points = this.fullPoints.slice(a,b);
+        this.updateTracker()
+    }
+
+    displayFromDates(startTime, endTime) {
+        this.points = this.fullPoints.filter((point) => point.timestamp > startTime && point.timestamp < endTime);
+        this.updateTracker();
+    }
+
+    updateTracker(){
+        this.polyline.setPath(this.points.map((point) => {return point.pos}));
+        this.startMarker.setPosition(this.points[0].pos)
+        this.slideMarker.setPosition(this.points[0].pos)
+        this.endMarker.setPosition(this.points[this.points.length - 1].pos)
+        updateSlider()
     }
 }
 
