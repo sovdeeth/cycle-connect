@@ -63,3 +63,22 @@
 .btn-search:hover {
     background-color: #FF2500;
 }
+
+#map {
+    position:absolute;
+    top:20px;
+    left: 20px;
+    height: 90%;
+    width: 80%;
+    /* The width is the width of the web page */
+  }
+
+#myRange {
+  width: 100%;
+}
+
+.data-points {
+    position:relative;
+    left:87.5%;
+    top:156px;
+}

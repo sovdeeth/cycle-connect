@@ -1,14 +1,24 @@
 <html>
     <head>
-        <link rel="stylesheet" type="text/css" href="./style.css" />
+        <link rel="stylesheet" type="text/css" href="../mystyle.css" />
         <script src="maps.js"></script>
     </head>
 
     <body>
-        <h2>Cycle Connect Dashboard</h2>
-        <div id="map">Map Here</div>
-        <input type="range" min="0" max="100" value="0" class="slider" id="myRange" oninput="updateMarkerPos(this.value)">
-        <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCbCKnx_FMfqWJBGrta39J8LnUT0p1BHek&callback=initMap"></script>
-        
+        <div class="top">
+            <h1 style="position:absolute; left:20px; color:white;">Cycle Connect Dashboard</h1>
+        </div>
+        <div class ="top-left"></div>
+        <div class="main">
+            <div id="map">Map Here</div>
+            <input type="range" min="0" max="100" value="0" class="slider" id="myRange" oninput="updateMarkerPos(this.value)" style="position:relative;top: 94%; width:80%;left:20px;">
+            <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCbCKnx_FMfqWJBGrta39J8LnUT0p1BHek&callback=initMap"></script>
+        </div>
+        <div class="left">
+            <h2 style = "color:white">INFORMATION HERE</h2>
+        </div>
+        <div class="data-points">
+            LATEST DATA POINTS
+        </div>
     </body>
 </html>
