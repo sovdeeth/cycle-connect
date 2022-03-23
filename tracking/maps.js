@@ -152,8 +152,19 @@ function initMap() {
         scale: 4,
     };
 
+    initTrackers();
+}
 
+function initTrackers() {
     registerTracker("skiing", "skiing.gpx");
+    registerTracker("snowboarding", "snowboarding.gpx");
+    registerTracker("old-river", "old-river.gpx");
+    registerTracker("toronto-run", "toronto-run.gpx");
+
+    for (i=0; i<trackers.length; i++){
+        document.getElementById("tracker-list").innerHTML += "<li class=\"tracker\" id=\"tracker-"+i+"\" onclick=\"focusTracker("+i+")\"> Tracker "+(i+1)+" <button class=\"select-tracker\" onclick=\"selectTracker(this, "+i+")\">Select</button></li>";
+    }
+        
     // trackers[0].addToMap(map);
     // map.panTo(trackers[0].points[0].pos);
     // updateSlider()
@@ -207,12 +218,19 @@ function updateMarkerPos(point) {
     map.panTo(point);
 }
 
-function selectTracker(number) {
-    trackers[number].addToMap(map);
+function selectTracker(button, number) {
+    button.classList.toggle("select-tracker-active");
+    if (button.classList.contains("select-tracker-active")) {
+        trackers[number].addToMap(map);
+    } else {
+        trackers[number].removeFromMap();
+    }
 }
 
 function focusTracker(number) {
-    selectedTracker = number;
-    updateSlider();
-    map.panTo(trackers[number].points[0].pos);
+    if (trackers[number].map != null){
+        selectedTracker = number;
+        updateSlider();
+        map.panTo(trackers[number].points[0].pos);
+    }
 }
