@@ -1,6 +1,7 @@
 <html>
     <head>
         <link rel="stylesheet" type="text/css" href="../mystyle.css" />
+        <link rel="stylesheet" type="text/css" href="tracker-style.css" />
         <script src="maps.js"></script>
     </head>
 
@@ -17,8 +18,10 @@
         <div class="left">
             <h2 style = "color:white">INFORMATION HERE</h2>
         </div>
-        <div class="data-points">
-            LATEST DATA POINTS
-        </div>
+        <ul id="tracker-list">
+            Tracker List
+            <li class="tracker" id="tracker-0" onclick="focusTracker(0)"> Tracker 1 <button class="select-tracker" onclick="selectTracker(0)">Select</button></li>
+        
+        </ul>
     </body>
 </html>

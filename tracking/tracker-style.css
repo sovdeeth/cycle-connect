@@ -1,0 +1,52 @@
+#tracker-list {
+    position:relative;
+    left:82.5%;
+    top:156px;
+    width: 200px;
+    list-style: none;
+}
+
+/*
+list element that has the name of the tracker left-aligned with a bit of padding, and centered vertically, with a white background, black curved border,
+and a vertical line to the right of the name.
+*/
+.tracker {
+    position:relative;
+    left:0;
+    top:0;
+    width:100%;
+    height:20px;
+    background-color:white;
+    border-radius:10px;
+    border:1px solid black;
+    text-align:left;
+    padding-left:10px;
+    padding-top:5px;
+    padding-bottom:10px;
+    margin-bottom:10px;
+}
+/*
+Small button that is used to select a tracker. It should turn red when selected, and white when not selected.
+The text should be centered vertically and horizontally. The button should be small enough to fit in the tracker.
+The button should be on the right side of the tracker.
+*/
+.select-tracker {
+    position:relative;
+    left:60px;
+    top:0;
+    width:60px;
+    height:25px;
+    background-color:white;
+    border-radius:10px;
+    border:1px solid black;
+    text-align:center;
+    padding-top:3px;
+}
+.select-tracker:hover {
+    background-color: #FF2500;
+    color:white;
+}
+.select-tracker:active {
+    background-color: #C00000;
+    color:white;
+}

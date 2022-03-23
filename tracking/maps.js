@@ -91,7 +91,7 @@ class Tracker {
 
     displayFromIndices(a, b){
         this.points = this.fullPoints.slice(a,b);
-        this.updateTracker()
+        this.updateTracker();
     }
 
     displayFromDates(startTime, endTime) {
@@ -101,10 +101,10 @@ class Tracker {
 
     updateTracker(){
         this.polyline.setPath(this.points.map((point) => {return point.pos}));
-        this.startMarker.setPosition(this.points[0].pos)
-        this.slideMarker.setPosition(this.points[0].pos)
-        this.endMarker.setPosition(this.points[this.points.length - 1].pos)
-        updateSlider()
+        this.startMarker.setPosition(this.points[0].pos);
+        this.slideMarker.setPosition(this.points[0].pos);
+        this.endMarker.setPosition(this.points[this.points.length - 1].pos);
+        updateSlider();
     }
 }
 
@@ -154,9 +154,9 @@ function initMap() {
 
 
     registerTracker("skiing", "skiing.gpx");
-    trackers[0].addToMap(map);
-    map.panTo(trackers[0].points[0].pos);
-    updateSlider()
+    // trackers[0].addToMap(map);
+    // map.panTo(trackers[0].points[0].pos);
+    // updateSlider()
 }
 
 function registerTracker(name, filename) {
@@ -205,4 +205,14 @@ function updateMarkerPos(point) {
                                 "<p>Location: "+ trackers[selectedTracker].slideMarker.getPosition().lat() +"&deg;N, " + trackers[selectedTracker].slideMarker.getPosition().lng() + "&deg;E</p>"/*+
                                 "<p>Timestamp: "+point.timestamp.toLocaleTimeString() + " " + point.timestamp.toDateString() + "</p>"*/);
     map.panTo(point);
+}
+
+function selectTracker(number) {
+    trackers[number].addToMap(map);
+}
+
+function focusTracker(number) {
+    selectedTracker = number;
+    updateSlider();
+    map.panTo(trackers[number].points[0].pos);
 }
