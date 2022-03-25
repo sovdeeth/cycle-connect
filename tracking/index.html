@@ -1,8 +1,9 @@
 <html>
     <head>
-        <link rel="stylesheet" type="text/css" href="../mystyle.css" />
-        <link rel="stylesheet" type="text/css" href="tracker-style.css" />
-        <script src="maps.js"></script>
+        <link rel="stylesheet" type="text/css" href="../static/mystyle.css" />
+        <link rel="stylesheet" type="text/css" href="../static/tracker-style.css" />
+        <script src="../static/maps.js"></script>
+        <script>window.addEventListener('DOMContentLoaded', selectTracker(0));</script>
     </head>
 
     <body>
@@ -20,8 +21,9 @@
         </div>
         <ul id="tracker-list">
             Tracker List
-            <li class="tracker" id="tracker-0" onclick="focusTracker(0)"> Tracker 1 <button class="select-tracker" onclick="selectTracker(0)">Select</button></li>
-        
+            <form method="POST", action='/tracker-1' tracker-1>
+                <li class="tracker" id="tracker-0" onclick="focusTracker(0)"> Tracker 1 <button class="select-tracker" onclick="selectTracker(0)">Select</button></li>
+            </form>
         </ul>
     </body>
 </html>
