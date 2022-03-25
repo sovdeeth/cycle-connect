@@ -31,7 +31,9 @@ def read_data(file, start_date, end_date):
         timestamp = gpx[i][10:-17]
         timestamp = datetime.datetime.strptime(timestamp, "%Y-%m-%d").date()
         if current_date - datetime.timedelta(days=start_date) <= timestamp:
-            data_points.append(gpx[i-2][15:-2].split('" lon="'))
+            point = [float(i) for i in gpx[i-2][15:-2].split('" lon="')]
+            point.append(timestamp) # get timestamp from gpx file
+            data_points.append(point)
         elif current_date - datetime.timedelta(days=end_date) > timestamp:
             break
     with app.app_context():
@@ -39,4 +41,4 @@ def read_data(file, start_date, end_date):
 
 def gpx_points(tracker_id, start_date, end_date):
     file = get_data(tracker_id)
-    return read_data(file, start_date, end_date)
+    return read_data(file, int(start_date), int(end_date))

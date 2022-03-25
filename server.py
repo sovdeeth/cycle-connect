@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from database import *
 
 app = Flask(__name__, template_folder='tracking')
@@ -7,9 +7,12 @@ app = Flask(__name__, template_folder='tracking')
 def index():
   return render_template('index.html')
 
-@app.route('/tracker/<int: tracker_id>/<int: start_date>/<int: end_date>', methods=['POST'])
+@app.route('/tracker-request/', methods=['POST'])
 def data():
-  return gpx_points({tracker_id}, {start_id}, {end_date})
+  name = request.form['tracker']
+  startTime = request.form['startTime']
+  endTime = request.form['endTime']
+  return gpx_points(name, startTime, endTime)
 
 if __name__ == '__main__':
   app.run(debug=True)

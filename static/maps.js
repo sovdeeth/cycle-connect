@@ -7,11 +7,10 @@ class Point {
 }
 
 class Tracker {
-    constructor(name, filename) {
+    constructor(name, points) {
         this.name = name;
-        this.filename = filename;
         this.map;
-        this.fullPoints = parseGPX(filename);
+        this.fullPoints = points.map((point) => {return new Point(point[0], point[1], point[2])});
         this.points = this.fullPoints.slice()
         this.startMarker = new google.maps.Marker({
             position: this.points[0].pos,
@@ -41,22 +40,22 @@ class Tracker {
             
         this.slideMarker.addListener("click", () => {
             this.infoWindow.setContent(//"<h2>"+point.label+"</h2>"+
-                                    "<p>Location: "+ this.slideMarker.getPosition().lat() +"&deg;N, " + this.slideMarker.getPosition().lng() + "&deg;E</p>"/*+
-                                    "<p>Timestamp: "+point.timestamp.toLocaleTimeString() + " " + point.timestamp.toDateString() + "</p>"*/);
+                                    "<p>Location: "+ this.slideMarker.getPosition().lat() +"&deg;N, " + this.slideMarker.getPosition().lng() + "&deg;E</p>"+
+                                    "<p>Timestamp: "+this.points[0].timestamp + "</p>");
             this.infoWindow.open(this.map, this.slideMarker);
         });
 
         this.startMarker.addListener("click", () => {
             this.infoWindow.setContent(//"<h2>"+point.label+"</h2>"+
-                                    "<p>Location: "+ this.startMarker.getPosition().lat() +"&deg;N, " + this.startMarker.getPosition().lng() + "&deg;E</p>"/*+
-                                    "<p>Timestamp: "+point.timestamp.toLocaleTimeString() + " " + point.timestamp.toDateString() + "</p>"*/);
+                                    "<p>Location: "+ this.startMarker.getPosition().lat() +"&deg;N, " + this.startMarker.getPosition().lng() + "&deg;E</p>"+
+                                    "<p>Timestamp: "+this.points[0].timestamp + "</p>");
             this.infoWindow.open(this.map, this.startMarker);
         });
 
         this.endMarker.addListener("click", () => {
             this.infoWindow.setContent(//"<h2>"+point.label+"</h2>"+
-                                    "<p>Location: "+ this.endMarker.getPosition().lat() +"&deg;N, " + this.endMarker.getPosition().lng() + "&deg;E</p>"/*+
-                                    "<p>Timestamp: "+point.timestamp.toLocaleTimeString() + " " + point.timestamp.toDateString() + "</p>"*/);
+                                    "<p>Location: "+ this.endMarker.getPosition().lat() +"&deg;N, " + this.endMarker.getPosition().lng() + "&deg;E</p>"+
+                                    "<p>Timestamp: "+this.points[this.points.length-1].timestamp + "</p>");
             this.infoWindow.open(this.map, this.endMarker);
         });
     }
@@ -155,14 +154,20 @@ function initMap() {
     initTrackers();
 }
 
-function initTrackers() {
-    registerTracker("skiing", "skiing.gpx");
-    registerTracker("snowboarding", "snowboarding.gpx");
-    registerTracker("old-river", "old-river.gpx");
-    registerTracker("toronto-run", "toronto-run.gpx");
+async function initTrackers() {
+    trackerList = [await requestTrackerPoints(3, 40, 10)];
+
+    trackerList.forEach((tracker) => {
+        registerTracker(tracker[0], tracker[1]);
+        console.log("registered tracker: " + tracker[0]);
+    });
+    // registerTracker("skiing", "skiing.gpx");
+    // registerTracker("snowboarding", "snowboarding.gpx");
+    // registerTracker("old-river", "old-river.gpx");
+    // registerTracker("toronto-run", "toronto-run.gpx");
 
     for (i=0; i<trackers.length; i++){
-        document.getElementById("tracker-list").innerHTML += "<li class=\"tracker\" id=\"tracker-"+i+"\" onclick=\"focusTracker("+i+")\"> Tracker "+(i+1)+" <button class=\"select-tracker\" onclick=\"selectTracker(this, "+i+")\">Select</button></li>";
+        document.getElementById("tracker-list").innerHTML += "<li class=\"tracker\" id=\"tracker-"+i+"\" onclick=\"focusTracker("+i+")\">"+(i+1)+": "+trackers[i].name+" <button class=\"select-tracker\" onclick=\"selectTracker(this, "+i+")\">Select</button></li>";
     }
         
     // trackers[0].addToMap(map);
@@ -170,36 +175,55 @@ function initTrackers() {
     // updateSlider()
 }
 
-function registerTracker(name, filename) {
-    let tracker = new Tracker(name, filename);
+function registerTracker(name, points) {
+    let tracker = new Tracker(name, points);
     trackers.push(tracker);
 }
 
 
-function parseGPX(gpxString){
-    if (window.XMLHttpRequest) {
-        xmlhttp = new XMLHttpRequest();
-    } else {
-        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-    }
+// function requestAllTrackers(startTime, endTime) {
+//     // request all trackers
+//     return tracker
+// }
 
-    xmlhttp.open("GET", "gps/"+gpxString, false);
-    xmlhttp.send();
-    xml = xmlhttp.responseXML;
-
-    const errorNode = xml.querySelector("parsererror");
-    if (errorNode) {
-        console.log("error while parsing");
-        return;
-    } 
-
-    const gpxPoints = xml.documentElement.getRootNode().getElementsByTagName("gpx")[0].getElementsByTagName("trk")[0].getElementsByTagName("trkseg")[0].getElementsByTagName("trkpt")
-
-    const points = Array.from(gpxPoints).map((node) => {
-        return new Point(Number(node.getAttribute("lat")), Number(node.getAttribute("lon")), new Date(node.getElementsByTagName("time")[0].innerHTML));
-    })
-    return points;
+async function requestTrackerPoints(name, startTime, endTime) {
+    const payload = new FormData();
+    payload.append("tracker", name);
+    payload.append("startTime", startTime);
+    payload.append("endTime", endTime);
+    const res = await fetch('/tracker-request/', {
+        method: 'post',
+        body: payload
+    });
+    const points = await res.json();
+    console.log(points[0]);
+    return [name, points];
 }
+
+// function parseGPX(gpxString){
+//     if (window.XMLHttpRequest) {
+//         xmlhttp = new XMLHttpRequest();
+//     } else {
+//         xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+//     }
+
+//     xmlhttp.open("GET", "gps/"+gpxString, false);
+//     xmlhttp.send();
+//     xml = xmlhttp.responseXML;
+
+//     const errorNode = xml.querySelector("parsererror");
+//     if (errorNode) {
+//         console.log("error while parsing");
+//         return;
+//     } 
+
+//     const gpxPoints = xml.documentElement.getRootNode().getElementsByTagName("gpx")[0].getElementsByTagName("trk")[0].getElementsByTagName("trkseg")[0].getElementsByTagName("trkpt")
+
+//     const points = Array.from(gpxPoints).map((node) => {
+//         return new Point(Number(node.getAttribute("lat")), Number(node.getAttribute("lon")), new Date(node.getElementsByTagName("time")[0].innerHTML));
+//     })
+//     return points;
+// }
 
 
 function updateSlider(){
@@ -209,12 +233,12 @@ function updateSlider(){
     slider.setAttribute("max", max)
 }
 
-function updateMarkerPos(point) {
-    point = trackers[selectedTracker].polyline.getPath().getAt(point);
+function updateMarkerPos(pointIndex) {
+    point = trackers[selectedTracker].polyline.getPath().getAt(pointIndex);
     trackers[selectedTracker].slideMarker.setPosition(point);
     trackers[selectedTracker].infoWindow.setContent(//"<h2>"+point.label+"</h2>"+
-                                "<p>Location: "+ trackers[selectedTracker].slideMarker.getPosition().lat() +"&deg;N, " + trackers[selectedTracker].slideMarker.getPosition().lng() + "&deg;E</p>"/*+
-                                "<p>Timestamp: "+point.timestamp.toLocaleTimeString() + " " + point.timestamp.toDateString() + "</p>"*/);
+                                "<p>Location: "+ trackers[selectedTracker].slideMarker.getPosition().lat() +"&deg;N, " + trackers[selectedTracker].slideMarker.getPosition().lng() + "&deg;E</p>"+
+                                "<p>Timestamp: "+trackers[selectedTracker].points[pointIndex].timestamp + "</p>");
     map.panTo(point);
 }
 
