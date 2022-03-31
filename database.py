@@ -21,18 +21,19 @@ def get_data(tracker_id):
     query = select([trackers]).where(trackers.c.id==tracker_id)
     result = conn.execute(query)
     rows = result.fetchall()
-    return rows
+    return str(rows[-1][-1]).split('\\n')
 
 def read_data(file, start_date, end_date):
-    gpx = str(file[-1][-1]).split('\\n')[9:]
+    gpx = file[9:]
     data_points = []
     current_date = datetime.date.today()
     for i in range(2, len(gpx)-2, 4):
         timestamp = gpx[i][10:-17]
+        timestamp = timestamp.strip('T')
         timestamp = datetime.datetime.strptime(timestamp, "%Y-%m-%d").date()
         if current_date - datetime.timedelta(days=start_date) <= timestamp:
-            point = [float(i) for i in gpx[i-2][15:-2].split('" lon="')]
-            point.append(timestamp) # get timestamp from gpx file
+            point = [float(i) for i in gpx[i-2][15:-3].split('" lon="')]
+            point.append(timestamp)
             data_points.append(point)
         elif current_date - datetime.timedelta(days=end_date) > timestamp:
             break
