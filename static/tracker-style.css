@@ -32,7 +32,7 @@ The button should be on the right side of the tracker.
 */
 .select-tracker {
     position:relative;
-    left:60px;
+    left:50px;
     top:0;
     width:60px;
     height:25px;

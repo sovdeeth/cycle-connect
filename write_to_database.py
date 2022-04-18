@@ -18,8 +18,10 @@ def append_data(tracker_id, data_point, timestamp):
     data = get_data(tracker_id)
     gpx_start, gpx_end = data[:-4], data[-4:]
     timestamp = datetime.datetime.utcfromtimestamp(int(timestamp)).strftime('%Y-%m-%dT%H:%M:%SZ')
+    # print(f"appending: lat={data_point[0]} lon={data_point[1]} time={timestamp}")
     gpx_start.extend([f'   <trkpt lat="{data_point[0]}" lon="{data_point[1]}">', '', f'    <time>{timestamp}</time>', '   </trkpt>'])
     gpx_start.extend(gpx_end)
+    # print(gpx_start)
     return gpx_start
 
 def add_data_point(tracker_id, data_point, timestamp):

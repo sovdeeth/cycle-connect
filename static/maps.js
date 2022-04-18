@@ -155,19 +155,20 @@ function initMap() {
 }
 
 async function initTrackers() {
-    trackerList = [await requestTrackerPoints(3, 40, 10)];
+    trackerList = [[3,400,0],[13,40,0]];
 
-    trackerList.forEach((tracker) => {
+    for (let i = 0; i < trackerList.length; i++) {
+        let tracker = await requestTrackerPoints(trackerList[i][0], trackerList[i][1], trackerList[i][2]);
+        console.log(tracker);
         registerTracker(tracker[0], tracker[1]);
-        console.log("registered tracker: " + tracker[0]);
-    });
+    }
     // registerTracker("skiing", "skiing.gpx");
     // registerTracker("snowboarding", "snowboarding.gpx");
     // registerTracker("old-river", "old-river.gpx");
     // registerTracker("toronto-run", "toronto-run.gpx");
 
     for (i=0; i<trackers.length; i++){
-        document.getElementById("tracker-list").innerHTML += "<li class=\"tracker\" id=\"tracker-"+i+"\" onclick=\"focusTracker("+i+")\">"+(i+1)+": "+trackers[i].name+" <button class=\"select-tracker\" onclick=\"selectTracker(this, "+i+")\">Select</button></li>";
+        document.getElementById("tracker-list").innerHTML += "<li class=\"tracker\" id=\"tracker-"+i+"\" onclick=\"focusTracker("+i+")\"> Tracker #"+trackers[i].name+" <button class=\"select-tracker\" onclick=\"selectTracker(this, "+i+")\">Select</button></li>";
     }
         
     // trackers[0].addToMap(map);
@@ -195,8 +196,10 @@ async function requestTrackerPoints(name, startTime, endTime) {
         method: 'post',
         body: payload
     });
-    const points = await res.json();
-    console.log(points[0]);
+    let points = await res.json();
+    // console.log()
+    if (name == 13) points.map((point) => {point[0] -= 0.0073; point[1] = -1 * point[1] + 0.0092; return point;});
+    console.log(points);
     return [name, points];
 }
 
